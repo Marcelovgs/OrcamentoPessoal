@@ -1,5 +1,7 @@
+// Classe Despesa para armazenar os dados da despesa
 class Despesa {
 	constructor(ano, mes, dia, tipo, descricao, valor) {
+		// Inicializa os atributos da despesa
 		this.ano = ano
 		this.mes = mes
 		this.dia = dia
@@ -8,8 +10,11 @@ class Despesa {
 		this.valor = valor
 	}
 
+	// Método para validar se todos os dados foram preenchidos corretamente
 	validarDados() {
+		// Itera sobre cada atributo da instância da classe
 		for(let i in this) {
+			// Se algum atributo for undefined, vazio ou null, retorna falso
 			if(this[i] == undefined || this[i] == '' || this[i] == null) {
 				return false
 			}
@@ -18,9 +23,11 @@ class Despesa {
 	}
 }
 
+// Classe Bd (Banco de Dados) para manipular o localStorage
 class Bd {
 
 	constructor() {
+		// Verifica se já existe o id no localStorage, caso contrário inicializa com 0
 		let id = localStorage.getItem('id')
 
 		if(id === null) {
@@ -28,102 +35,93 @@ class Bd {
 		}
 	}
 
+	// Método para obter o próximo id disponível no localStorage
 	getProximoId() {
 		let proximoId = localStorage.getItem('id')
 		return parseInt(proximoId) + 1
 	}
 
+	// Método para gravar uma despesa no localStorage
 	gravar(d) {
 		let id = this.getProximoId()
 
+		// Armazena a despesa com o próximo id como chave
 		localStorage.setItem(id, JSON.stringify(d))
 
+		// Atualiza o id no localStorage
 		localStorage.setItem('id', id)
 	}
 
+	// Método para recuperar todas as despesas cadastradas
 	recuperarTodosRegistros() {
 
-		//array de despesas
+		// Array para armazenar as despesas recuperadas
 		let despesas = Array()
 
 		let id = localStorage.getItem('id')
 
-		//recuperar todas as despesas cadastradas em localStorage
+		// Itera sobre todos os ids de despesas armazenadas no localStorage
 		for(let i = 1; i <= id; i++) {
 
-			//recuperar a despesa
+			// Recupera a despesa do localStorage e converte de volta para objeto
 			let despesa = JSON.parse(localStorage.getItem(i))
 
-			//existe a possibilidade de haver índices que foram pulados/removidos
-			//nestes casos nós vamos pular esses índices
+			// Pula se a despesa não existir (foi removida ou nunca existiu)
 			if(despesa === null) {
 				continue
 			}
-			despesa.id = i
-			despesas.push(despesa)
+			despesa.id = i // Adiciona o id à despesa
+			despesas.push(despesa) // Adiciona ao array de despesas
 		}
 
-		return despesas
+		return despesas // Retorna o array de todas as despesas recuperadas
 	}
 
+	// Método para pesquisar despesas com base em filtros
 	pesquisar(despesa){
 
+		// Array para armazenar as despesas filtradas
 		let despesasFiltradas = Array()
-		despesasFiltradas = this.recuperarTodosRegistros()
-		console.log(despesasFiltradas);
-		console.log(despesa)
+		despesasFiltradas = this.recuperarTodosRegistros() // Recupera todas as despesas
 
-		//ano
+		// Aplica os filtros conforme os dados da despesa fornecida
 		if(despesa.ano != ''){
-			console.log("filtro de ano");
 			despesasFiltradas = despesasFiltradas.filter(d => d.ano == despesa.ano)
 		}
-			
-		//mes
 		if(despesa.mes != ''){
-			console.log("filtro de mes");
 			despesasFiltradas = despesasFiltradas.filter(d => d.mes == despesa.mes)
 		}
-
-		//dia
 		if(despesa.dia != ''){
-			console.log("filtro de dia");
 			despesasFiltradas = despesasFiltradas.filter(d => d.dia == despesa.dia)
 		}
-
-		//tipo
 		if(despesa.tipo != ''){
-			console.log("filtro de tipo");
 			despesasFiltradas = despesasFiltradas.filter(d => d.tipo == despesa.tipo)
 		}
-
-		//descricao
 		if(despesa.descricao != ''){
-			console.log("filtro de descricao");
 			despesasFiltradas = despesasFiltradas.filter(d => d.descricao == despesa.descricao)
 		}
-
-		//valor
 		if(despesa.valor != ''){
-			console.log("filtro de valor");
 			despesasFiltradas = despesasFiltradas.filter(d => d.valor == despesa.valor)
 		}
 
-		
+		// Retorna as despesas filtradas
 		return despesasFiltradas
 
 	}
 
+	// Método para remover uma despesa com base no id
 	remover(id){
 		localStorage.removeItem(id)
 	}
 }
 
-let bd = new Bd()
+let bd = new Bd() // Instancia a classe Bd
 
 
+// Função para cadastrar uma nova despesa
 function cadastrarDespesa() {
 
+	// Coleta os dados do formulário
 	let ano = document.getElementById('ano')
 	let mes = document.getElementById('mes')
 	let dia = document.getElementById('dia')
@@ -131,6 +129,7 @@ function cadastrarDespesa() {
 	let descricao = document.getElementById('descricao')
 	let valor = document.getElementById('valor')
 
+	// Cria uma nova instância de Despesa com os valores do formulário
 	let despesa = new Despesa(
 		ano.value, 
 		mes.value, 
@@ -140,19 +139,20 @@ function cadastrarDespesa() {
 		valor.value
 	)
 
-
+	// Valida se todos os dados foram preenchidos corretamente
 	if(despesa.validarDados()) {
-		bd.gravar(despesa)
+		bd.gravar(despesa) // Grava a despesa no localStorage
 
+		// Exibe um modal de sucesso
 		document.getElementById('modal_titulo').innerHTML = 'Registro inserido com sucesso'
 		document.getElementById('modal_titulo_div').className = 'modal-header text-success'
 		document.getElementById('modal_conteudo').innerHTML = 'Despesa foi cadastrada com sucesso!'
 		document.getElementById('modal_btn').innerHTML = 'Voltar'
 		document.getElementById('modal_btn').className = 'btn btn-success'
 
-		//dialog de sucesso
-		$('#modalRegistraDespesa').modal('show') 
+		$('#modalRegistraDespesa').modal('show') // Exibe o modal
 
+		// Limpa os campos do formulário
 		ano.value = '' 
 		mes.value = ''
 		dia.value = ''
@@ -161,47 +161,35 @@ function cadastrarDespesa() {
 		valor.value = ''
 		
 	} else {
-		
+		// Exibe um modal de erro
 		document.getElementById('modal_titulo').innerHTML = 'Erro na inclusão do registro'
 		document.getElementById('modal_titulo_div').className = 'modal-header text-danger'
 		document.getElementById('modal_conteudo').innerHTML = 'Erro na gravação, verifique se todos os campos foram preenchidos corretamente!'
 		document.getElementById('modal_btn').innerHTML = 'Voltar e corrigir'
 		document.getElementById('modal_btn').className = 'btn btn-danger'
 
-		//dialog de erro
-		$('#modalRegistraDespesa').modal('show') 
+		$('#modalRegistraDespesa').modal('show') // Exibe o modal
 	}
 }
 
+// Função para carregar a lista de despesas no DOM
 function carregaListaDespesas(despesas = Array(), filtro = false) {
 
     if(despesas.length == 0 && filtro == false){
-		despesas = bd.recuperarTodosRegistros() 
+		despesas = bd.recuperarTodosRegistros() // Se não houver despesas ou filtro, recupera todas
 	}
-	
-
-	/*
-
-	<tr>
-		<td>15/03/2018</td>
-		<td>Alimentação</td>
-		<td>Compras do mês</td>
-		<td>444.75</td>
-	</tr>
-
-	*/
 
 	let listaDespesas = document.getElementById("listaDespesas")
-    listaDespesas.innerHTML = ''
+    listaDespesas.innerHTML = '' // Limpa a lista atual
 	despesas.forEach(function(d){
 
-		//Criando a linha (tr)
+		// Cria uma nova linha na tabela para cada despesa
 		var linha = listaDespesas.insertRow();
 
-		//Criando as colunas (td)
+		// Preenche as colunas com os dados da despesa
 		linha.insertCell(0).innerHTML = `${d.dia}/${d.mes}/${d.ano}` 
 
-		//Ajustar o tipo
+		// Ajusta o valor do tipo de despesa
 		switch(d.tipo){
 			case '1': d.tipo = 'Alimentação'
 				break
@@ -213,31 +201,28 @@ function carregaListaDespesas(despesas = Array(), filtro = false) {
 				break
 			case '5': d.tipo = 'Transporte'
 				break
-			
 		}
 		linha.insertCell(1).innerHTML = d.tipo
 		linha.insertCell(2).innerHTML = d.descricao
 		linha.insertCell(3).innerHTML = d.valor
 
-		//Criar o botão de exclusão
+		// Cria o botão de exclusão
 		let btn = document.createElement('button')
 		btn.className = 'btn btn-danger'
 		btn.innerHTML = '<i class="fa fa-times"  ></i>'
 		btn.id = `id_despesa_${d.id}`
 		btn.onclick = function(){
-			let id = this.id.replace('id_despesa_','')
-			//alert(id)
-			bd.remover(id)
-			window.location.reload()
+			let id = this.id.replace('id_despesa_','') // Obtém o id da despesa a ser removida
+			bd.remover(id) // Remove a despesa
+			window.location.reload() // Recarrega a página
 		}
-		linha.insertCell(4).append(btn)
-		console.log(d)
+		linha.insertCell(4).append(btn) // Adiciona o botão à linha
 	})
 
  }
 
- 
- function pesquisarDespesa(){
+// Função para pesquisar despesas com base nos filtros do formulário
+function pesquisarDespesa(){
 	 
 	let ano  = document.getElementById("ano").value
 	let mes = document.getElementById("mes").value
@@ -246,10 +231,12 @@ function carregaListaDespesas(despesas = Array(), filtro = false) {
 	let descricao = document.getElementById("descricao").value
 	let valor = document.getElementById("valor").value
 
+	// Cria uma nova instância de Despesa com os filtros preenchidos
 	let despesa = new Despesa(ano, mes, dia, tipo, descricao, valor)
 
+	// Pesquisa as despesas que correspondem aos filtros
 	let despesas = bd.pesquisar(despesa)
 	 
-	this.carregaListaDespesas(despesas, true)
+	this.carregaListaDespesas(despesas, true) // Carrega a lista filtrada
 
- }
+}
